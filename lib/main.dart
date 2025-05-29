@@ -1,3 +1,4 @@
+import 'package:digitaltrainingboards/boards/boards.dart';
 import 'package:digitaltrainingboards/settings.dart';
 import 'package:flutter/material.dart';
 
@@ -54,10 +55,16 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Card(
-              child: const SizedBox(
-                width: 150,
-                height: 150,
-                child: Center(child: Text('Boards')),
+              child: TextButton(
+                child: SizedBox(
+                  width: 150,
+                  height: 150,
+                  child: Center(child: Text('Boards')),
+                ),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Boards()),
+                ),
               ),
             ),
           ],
