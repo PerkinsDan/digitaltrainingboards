@@ -1,48 +1,9 @@
-import 'package:digitaltrainingboards/mixins/board_details.dart';
+import 'dart:convert';
+
+import 'package:digitaltrainingboards/objects/board_details.dart';
+import 'package:digitaltrainingboards/objects/holds.dart';
 import 'package:flutter/material.dart';
-
-enum HoldType { start, hand, end, hidden }
-
-extension HoldTypeColor on HoldType {
-  Color get color {
-    switch (this) {
-      case HoldType.start:
-        return Colors.green;
-      case HoldType.hand:
-        return Colors.blue;
-      case HoldType.end:
-        return Colors.red;
-      case HoldType.hidden:
-        return Colors.transparent;
-    }
-  }
-}
-
-class Hold {
-  final double size;
-  final double x;
-  final double y;
-  HoldType type = HoldType.start;
-
-  Hold({required this.size, required this.x, required this.y});
-
-  changeType() {
-    switch (type) {
-      case HoldType.start:
-        type = HoldType.hand;
-        break;
-      case HoldType.hand:
-        type = HoldType.end;
-        break;
-      case HoldType.end:
-        type = HoldType.hidden;
-        break;
-      case HoldType.hidden:
-        type = HoldType.start;
-        break;
-    }
-  }
-}
+import 'package:flutter/services.dart';
 
 class Board extends StatefulWidget {
   final BoardDetails board;
@@ -54,16 +15,37 @@ class Board extends StatefulWidget {
 }
 
 class _BoardState extends State<Board> {
-  var holds = [
-    Hold(size: 35, x: 18, y: 58),
-    Hold(size: 35, x: 80, y: 49),
-    Hold(size: 35, x: 108, y: 20),
-    Hold(size: 50, x: 155, y: 22),
-    Hold(size: 35, x: 215, y: 57),
-    Hold(size: 40, x: 270, y: 54),
-    Hold(size: 35, x: 278, y: 24),
-    Hold(size: 40, x: 325, y: 40),
-  ];
+  var holds = <Hold>[];
+  double? imageAspectRatio;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Load holds from JSON
+    loadHoldsFromJsonFile().then((loadedHolds) {
+      setState(() {
+        holds = loadedHolds;
+      });
+    });
+
+    // Get the aspect ratio of the image
+    _getImageAspectRatio(widget.board.image);
+  }
+
+  Future<void> _getImageAspectRatio(String imagePath) async {
+    final Image image = Image.asset(imagePath);
+    final ImageStream stream = image.image.resolve(const ImageConfiguration());
+    stream.addListener(
+      ImageStreamListener((ImageInfo info, bool _) {
+        final int width = info.image.width;
+        final int height = info.image.height;
+        setState(() {
+          imageAspectRatio = width / height;
+        });
+      }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,33 +57,59 @@ class _BoardState extends State<Board> {
         title: Text(board.name),
       ),
       body: Center(
-        child: Stack(
-          children: [
-            Image.asset(board.image),
-            ...holds.map(
-              (hold) => Positioned(
-                left: hold.x,
-                top: hold.y,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      hold.changeType();
-                    });
+        child: imageAspectRatio == null
+            ? const CircularProgressIndicator() // Show a loader until the aspect ratio is calculated
+            : AspectRatio(
+                aspectRatio: imageAspectRatio!,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final height = constraints.maxHeight;
+                    return Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(image: AssetImage(board.image)),
+                      ),
+                      child: Stack(
+                        children: holds.map((hold) {
+                          return Positioned(
+                            left: hold.x / 800 * width - 20,
+                            top: hold.y / 750 * height - 20,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  hold.changeType();
+                                });
+                              },
+                              child: Container(
+                                width: hold.size,
+                                height: hold.size,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: hold.type.color,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    );
                   },
-                  child: Container(
-                    width: hold.size,
-                    height: hold.size,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: hold.type.color, width: 2),
-                    ),
-                  ),
                 ),
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
+}
+
+Future<List<Hold>> loadHoldsFromJsonFile() async {
+  final String jsonString = await rootBundle.loadString('assets/holds.json');
+  final Map<String, dynamic> data = json.decode(jsonString);
+
+  return data.entries.map((entry) {
+    final List<dynamic> coords = entry.value;
+    return Hold(x: coords[0].toDouble(), y: coords[1].toDouble());
+  }).toList();
 }

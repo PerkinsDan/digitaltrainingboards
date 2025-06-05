@@ -1,5 +1,5 @@
 import 'package:digitaltrainingboards/boards/board.dart';
-import 'package:digitaltrainingboards/mixins/board_details.dart';
+import 'package:digitaltrainingboards/objects/board_details.dart';
 import 'package:flutter/material.dart';
 
 class Boards extends StatelessWidget {
@@ -7,6 +7,7 @@ class Boards extends StatelessWidget {
 
   static final boards = [
     BoardDetails(name: 'Airton Garage', image: 'assets/board.png'),
+    BoardDetails(name: 'Canary 45', image: 'assets/wall.png'),
   ];
 
   @override
