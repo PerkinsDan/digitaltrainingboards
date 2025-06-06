@@ -21,7 +21,7 @@ class Hold {
   final double size = 35;
   final double x;
   final double y;
-  HoldType type = HoldType.start;
+  HoldType type = HoldType.hidden;
 
   Hold({required this.x, required this.y});
 

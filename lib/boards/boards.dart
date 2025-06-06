@@ -6,8 +6,8 @@ class Boards extends StatelessWidget {
   const Boards({super.key});
 
   static final boards = [
-    BoardDetails(name: 'Airton Garage', image: 'assets/board.png'),
-    BoardDetails(name: 'Canary 45', image: 'assets/wall.png'),
+    BoardDetails(name: 'Garage Airton', assets: 'GarageAirton'),
+    BoardDetails(name: 'Canary 45', assets: 'Canary45'),
   ];
 
   @override
