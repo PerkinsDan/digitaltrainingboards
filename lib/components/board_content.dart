@@ -4,9 +4,8 @@ import 'package:digitaltrainingboards/objects/board_details.dart';
 
 class BoardContent extends StatefulWidget {
   final BoardDetails board;
-  final List<Hold> holds;
 
-  const BoardContent({super.key, required this.board, required this.holds});
+  const BoardContent({super.key, required this.board});
 
   @override
   State<BoardContent> createState() => _BoardContentState();
@@ -37,6 +36,13 @@ class _BoardContentState extends State<BoardContent> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.board.holds == null || widget.board.holds!.isEmpty) {
+      return const Center(
+        child:
+            CircularProgressIndicator(), // Show a loading indicator if holds are not loaded
+      );
+    }
+
     return AspectRatio(
       aspectRatio: imageAspectRatio,
       child: LayoutBuilder(
@@ -44,31 +50,42 @@ class _BoardContentState extends State<BoardContent> {
           final width = constraints.maxWidth;
           final height = constraints.maxHeight;
           return Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(image: AssetImage(widget.board.image)),
-            ),
-            child: Stack(
-              children: widget.holds.map((hold) {
-                return Positioned(
-                  left: hold.x / 800 * width - 20,
-                  top: hold.y / 750 * height - 20,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        hold.changeType();
-                      });
-                    },
-                    child: Container(
-                      width: hold.size,
-                      height: hold.size,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: hold.type.color, width: 2),
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(image: AssetImage(widget.board.image)),
+                ),
+                child: Stack(
+                  children: widget.board.holds!.map((hold) {
+                    return Positioned(
+                      left: hold.x / 800 * width - 20,
+                      top: hold.y / 750 * height - 20,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (widget.board.isChangeable) {
+                              hold.changeType();
+                            }
+                          });
+                        },
+                        child: Container(
+                          width: hold.size,
+                          height: hold.size,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: hold.type.color,
+                              width: 2,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           );
         },

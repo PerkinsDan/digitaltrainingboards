@@ -21,9 +21,13 @@ class Hold {
   final double size = 35;
   final double x;
   final double y;
-  HoldType type = HoldType.hidden;
+  HoldType type;
 
-  Hold({required this.x, required this.y});
+  Hold({required this.x, required this.y, this.type = HoldType.hidden});
+
+  Map<String, dynamic> toMap() {
+    return {'x': x, 'y': y, 'type': type.toString()};
+  }
 
   changeType() {
     switch (type) {

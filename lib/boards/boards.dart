@@ -1,4 +1,4 @@
-import 'package:digitaltrainingboards/boards/board.dart';
+import 'package:digitaltrainingboards/boards/climbs/climbs.dart';
 import 'package:digitaltrainingboards/objects/board_details.dart';
 import 'package:flutter/material.dart';
 
@@ -6,8 +6,8 @@ class Boards extends StatelessWidget {
   const Boards({super.key});
 
   static final boards = [
-    BoardDetails(name: 'Garage Airton', assets: 'GarageAirton'),
-    BoardDetails(name: 'Canary 45', assets: 'Canary45'),
+    BoardDetails(name: 'Garage Airton', isChangeable: true),
+    BoardDetails(name: 'Canary 45', isChangeable: true),
   ];
 
   @override
@@ -28,7 +28,7 @@ class Boards extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Board(
+                        builder: (context) => Climbs(
                           board: board,
                         ), // Replace with actual board page
                       ),
